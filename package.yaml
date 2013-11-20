@@ -7,12 +7,12 @@ author:
   email : q3boy1@gmail.com
 engines:
   node: >=0.10.0
-homepage: https://github.com/q3boy/nnspoi
+homepage: https://github.com/q3boy/nns
 repository:
   type : git
-  url  : git://github.com/q3boy/nnspoi.git
+  url  : git://github.com/q3boy/nns.git
 bugs:
-  url: https://github.com/q3boy/nnspoi/issues
+  url: https://github.com/q3boy/nns/issues
 dependencies:
   options-stream : '*'
   heap           : '*'
