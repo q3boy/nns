@@ -166,8 +166,6 @@ class Finder extends EventEmitter
             break
           min = [dist, [zone[2], zone[3]]] if dist < min[0]
         found = min[1] unless found
-    # found nothing
-    return null unless found
 
     # unpack info data & return
     zone = @unpackInfo @zone, found[0], found[1]

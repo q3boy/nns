@@ -77,6 +77,13 @@ describe 'Finder', ->
           zone1 = dirty 30, 120, 1
           e(zone[k]).to.be zone1[0][k] for k of zone
           done()
+      it 'found min_index too small', (done)->
+        f = finder dir : dir, read_info : 'fs'
+        f.on 'loaded', ->
+          zone = f.search 30, 120, -1
+          zone1 = dirty 30, 120, 1
+          e(zone[k]).to.be zone1[0][k] for k of zone
+          done()
       it 'found only one in hash box', (done)->
         f = finder dir : dir, read_info : 'fs'
         f.on 'loaded', ->
@@ -94,7 +101,7 @@ describe 'Finder', ->
       it 'not found', (done)->
         f = finder dir : dir, read_info : 'fs'
         f.on 'loaded', ->
-          zone = f.search 1, 2, 1
+          zone = f.search 1, 2
           e(zone).to.be null
           done()
 
@@ -106,6 +113,26 @@ describe 'Finder', ->
           list.sort (a, b)-> a.distance - b.distance
           list1 = dirty 30, 120, 3
           e(list.length).to.be 3
+          for zone, i in list
+            e(zone[k]).to.be list1[i][k] for k of zone
+          done()
+      it 'found 3+ min_index too small', (done)->
+        f = finder dir : dir, read_info : 'fs'
+        f.on 'loaded', ->
+          list = f.topn 30, 120, 3, -1
+          list.sort (a, b)-> a.distance - b.distance
+          list1 = dirty 30, 120, 3
+          e(list.length).to.be 3
+          for zone, i in list
+            e(zone[k]).to.be list1[i][k] for k of zone
+          done()
+      it 'found num too big', (done)->
+        f = finder dir : dir, read_info : 'fs', max_topn : 2
+        f.on 'loaded', ->
+          list = f.topn 30, 120, 100, 1
+          list.sort (a, b)-> a.distance - b.distance
+          list1 = dirty 30, 120, 2
+          e(list.length).to.be 2
           for zone, i in list
             e(zone[k]).to.be list1[i][k] for k of zone
           done()
@@ -129,6 +156,13 @@ describe 'Finder', ->
           e(list.length).to.be 1
           for zone, i in list
             e(zone[k]).to.be list1[i][k] for k of zone
+          done()
+
+      it 'top1 not found', (done)->
+        f = finder dir : dir, read_info : 'fs'
+        f.on 'loaded', ->
+          list = f.topn 1, 2, 1, 1
+          e(list.length).to.be 0
           done()
       it 'not found', (done) ->
         f = finder dir : dir, read_info : 'fs', min_index : 1

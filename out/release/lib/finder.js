@@ -211,9 +211,6 @@ Finder = (function(_super) {
           found = min[1];
         }
     }
-    if (!found) {
-      return null;
-    }
     zone = this.unpackInfo(this.zone, found[0], found[1]);
     zone.distance = min[0];
     return zone;
