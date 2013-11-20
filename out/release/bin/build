@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# get real path
+if [ `echo $OSTYPE | grep -c 'darwin'` -eq 1 ]; then
+  ME=`stat -f "%Y" $0`
+  if [ "1$ME" == "1" ]; then
+    ME=$0
+  fi
+elif [ `echo $OSTYPE | grep -c 'linux'` -eq 1 ]; then
+  ME=`readlink -f $0`
+else
+  echo 'not support'
+  exit 1;
+fi
+
+code_dir=$(dirname $(cd "$(dirname "$ME")"; pwd))
+echo "code dir is $code_dir"
+cd $code_dir
+
+if [ -f 'node_modules/.bin/coffee' ]; then
+	cmd="node_modules/.bin/coffee bin/build.coffee $*"
+else
+	cmd="/usr/bin/env node bin/build.js $*"
+fi
+
+$cmd

@@ -1,0 +1,33 @@
+name: nnspoi
+main: index.js
+version: 0.0.1
+description: 'A nearest neighbor search engine for poi data.'
+author:
+  name  : q3boy
+  email : q3boy1@gmail.com
+engines:
+  node: >=0.10.0
+homepage: https://github.com/q3boy/nnspoi
+repository:
+  type : git
+  url  : git://github.com/q3boy/nnspoi.git
+bugs:
+  url: https://github.com/q3boy/nnspoi/issues
+dependencies:
+  options-stream : '*'
+  heap           : '*'
+  mkdirp         : '*'
+  ngeohash       : '*'
+  argparse       : '*'
+devDependencies:
+  coffee-script : '*'
+  mocha         : '*'
+  expect.js     : '*'
+  "geo-hash"    : '*'
+  jscover       : '*'
+  yamljs        : '*'
+  "find-remove" : '*'
+scripts:
+  prepublish  : make release
+  postpublish : make clean
+  test        : make test-cov
