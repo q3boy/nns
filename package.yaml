@@ -27,6 +27,8 @@ devDependencies:
   jscover       : '*'
   yamljs        : '*'
   "find-remove" : '*'
+bin:
+  nnsbuild : "./bin/build"
 scripts:
   prepublish  : make release
   postpublish : make clean
