@@ -1,8 +1,8 @@
 {
-  "name": "nnspoi",
+  "name": "nns",
   "main": "index.js",
   "version": "0.0.1",
-  "description": "A nearest neighbor search engine for poi data.",
+  "description": "A nearest neighbor search engine.",
   "author": {
     "name": "q3boy",
     "email": "q3boy1@gmail.com"

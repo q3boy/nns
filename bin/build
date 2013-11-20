@@ -20,7 +20,7 @@ cd $code_dir
 if [ -f 'node_modules/.bin/coffee' ]; then
 	cmd="node_modules/.bin/coffee bin/build.coffee $*"
 else
-	cmd="/usr/bin/env node bin/build.js $*"
+	cmd="/usr/bin/env node out/release/bin/build.js $*"
 fi
 
 $cmd
