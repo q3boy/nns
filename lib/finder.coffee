@@ -25,32 +25,35 @@ class Finder extends EventEmitter
     @distance = distance[@options.distance]
 
     # read files info
-    @finfo = JSON.parse fs.readFileSync path.join @options.dir, 'files.json'
-    # set unpack method
-    @unpackInfo = unpackZoneInfo["#{@finfo.packer}_#{@options.read_info}"]
+    fs.readFile path.join(@options.dir, 'files.json'), (err, data)=>
+      return @emit 'error', err if err
+      @finfo = JSON.parse data.toString()
 
-    # init indexes
-    @index = []
+      # set unpack method
+      @unpackInfo = unpackZoneInfo["#{@finfo.packer}_#{@options.read_info}"]
 
-    # max index lenggth
-    @indexLength = @finfo.index.length - 1
+      # init indexes
+      @index = []
 
-    # event loaded
-    loadFlag = @indexLength + 2
-    load = => @emit 'loaded' if 0 is --loadFlag
-    @on 'index_load' , load
-    @on 'gps_load'   , load
-    @on 'zone_load'  , load
+      # max index lenggth
+      @indexLength = @finfo.index.length - 1
 
-    # load all data
-    @loadGps().loadZone()
-    @loadIndex length for length in [1..@indexLength]
+      # event loaded
+      loadFlag = @indexLength + 2
+      load = => @emit 'loaded' if 0 is --loadFlag
+      @on 'index_load' , load
+      @on 'gps_load'   , load
+      @on 'zone_load'  , load
+
+      # load all data
+      @loadGps().loadZone()
+      @loadIndex length for length in [1..@indexLength]
 
   # load one index file
   loadIndex : (length)->
     file = path.join @options.dir, @finfo.index[length]
     fs.readFile file, (err, data)=>
-      return @emit err if err
+      return @emit 'error', err if err
       index = {}
       # extract index file
       for start in [0...data.length] by length + 8
@@ -66,7 +69,7 @@ class Finder extends EventEmitter
   loadGps : ->
     file = path.join @options.dir, @finfo.gps
     fs.readFile file, (err, data) =>
-      return @emit err if err
+      return @emit 'error', err if err
       @gps = data
       @emit 'gps_load'
     @
@@ -76,12 +79,12 @@ class Finder extends EventEmitter
     # info use fs
     if @options.read_info is 'fs'
       fs.open file, 'r', (err, @zone)=>
-        return @emit err if err
+        return @emit 'error', err if err
         @emit 'zone_load'
     # info use buffer
     else
       fs.readFile file, (err, data) =>
-        return @emit err if err
+        return @emit 'error', err if err
         @zone = data
         @emit 'zone_load'
     @
@@ -190,7 +193,7 @@ class Finder extends EventEmitter
     list
 
   close : ->
-    fs.closeSync @zone if @options.read_info is 'fs'
+    fs.closeSync @zone if @zone and @options.read_info is 'fs'
     @zone = null
     @gps = null
     @index[i] = null for i in [0..@indexLength]

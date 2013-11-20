@@ -6,19 +6,21 @@ builder = require '../lib/builder'
 finder  = require '../lib/finder'
 util    = require '../lib/util'
 
+
 describe 'Finder', ->
 
   dir = path.join __dirname,  'build/data'
   b = f = null
 
-  before (done) ->
+  bd = (cb)->
     b = builder
       dir          : dir
       src_file     : path.join __dirname, 'data/zone_info.txt'
       index_length : 3
       info_packer  : 'json'
+    b.on 'done', cb
 
-    b.on 'done', done
+
   beforeEach ->
     f = null
   afterEach ->
@@ -26,6 +28,7 @@ describe 'Finder', ->
   after -> rm dir
 
   describe 'load data', ->
+
     loadAssert = (read_info, event, done, cb) ->
       flag = false
       f = finder dir : dir, read_info : read_info
@@ -35,29 +38,54 @@ describe 'Finder', ->
       f.on 'loaded', ->
         e(flag).to.be true
         done()
+    describe 'ok', ->
+      before bd
+      describe 'zone info', ->
+        it 'in fs', (done) ->
+          loadAssert 'fs', 'zone_load', done, -> e(typeof @zone).to.be 'number'
+        it 'in fs', (done) ->
+          loadAssert 'buffer', 'zone_load', done, ->
+            e(@zone).to.be.a Buffer
+            e(@zone.length).to.be fs.statSync(path.join dir, 'zone.bin').size
+      it 'gps info', (done) ->
+        loadAssert 'buffer', 'gps_load', done, ->
+          e(@gps).to.be.a Buffer
+          e(@gps.length).to.be fs.statSync(path.join dir, 'gps.bin').size
+      it 'index', (done) ->
+        loadAssert 'buffer', 'index_load', done, (length)->
+          if length is 1
+            e(@index[1]).to.eql w : [0, 126]
+          else if length is 2
+            e(@index[2].wm).to.eql [0]
+            e(@index[2].ws).to.eql [28, 84]
+          else
+            e(@index[3].wm7).to.eql [0]
+            e(@index[3].ws0).to.eql [28, 42]
+    describe 'error', ->
+      beforeEach bd
+      loadErrorAssert = (file, done) ->
+        fs.unlinkSync path.join dir, file
+        f = finder dir : dir
+        f.on 'error', (err)->
+          e(err.code).to.be 'ENOENT'
+          e(err.path).to.be path.join dir, file
+          done()
+      it 'files info', (done)-> loadErrorAssert 'files.json', done
+      it 'zone info in fd', (done)-> loadErrorAssert 'zone.bin', done
+      it 'zone info in buffer', (done)->
+        fs.unlinkSync path.join dir, 'zone.bin'
+        f = finder dir : dir, read_info : 'buffer'
+        f.on 'error', (err)->
+          e(err.code).to.be 'ENOENT'
+          e(err.path).to.be path.join dir, 'zone.bin'
+          done()
+      it 'gps info file', (done)-> loadErrorAssert 'gps.bin', done
+      it 'index file', (done)-> loadErrorAssert 'index.2', done
 
-    describe 'zone info', ->
-      it 'in fs', (done) ->
-        loadAssert 'fs', 'zone_load', done, -> e(typeof @zone).to.be 'number'
-      it 'in fs', (done) ->
-        loadAssert 'buffer', 'zone_load', done, ->
-          e(@zone).to.be.a Buffer
-          e(@zone.length).to.be fs.statSync(path.join dir, 'zone.bin').size
-    it 'gps info', (done) ->
-      loadAssert 'buffer', 'gps_load', done, ->
-        e(@gps).to.be.a Buffer
-        e(@gps.length).to.be fs.statSync(path.join dir, 'gps.bin').size
-    it 'index', (done) ->
-      loadAssert 'buffer', 'index_load', done, (length)->
-        if length is 1
-          e(@index[1]).to.eql w : [0, 126]
-        else if length is 2
-          e(@index[2].wm).to.eql [0]
-          e(@index[2].ws).to.eql [28, 84]
-        else
-          e(@index[3].wm7).to.eql [0]
-          e(@index[3].ws0).to.eql [28, 42]
+
+
   describe 'search', ->
+    before bd
     dist = util.distance.sphere
     dirty = (lati, long, num = 3)->
       zones = b.data

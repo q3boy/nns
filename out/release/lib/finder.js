@@ -19,7 +19,7 @@ Finder = (function(_super) {
   __extends(Finder, _super);
 
   function Finder(options) {
-    var k, length, load, loadFlag, _i, _ref1,
+    var k,
       _this = this;
     this.options = {
       dir: path.join(__dirname, '../data'),
@@ -34,23 +34,31 @@ Finder = (function(_super) {
       }
     }
     this.distance = distance[this.options.distance];
-    this.finfo = JSON.parse(fs.readFileSync(path.join(this.options.dir, 'files.json')));
-    this.unpackInfo = unpackZoneInfo["" + this.finfo.packer + "_" + this.options.read_info];
-    this.index = [];
-    this.indexLength = this.finfo.index.length - 1;
-    loadFlag = this.indexLength + 2;
-    load = function() {
-      if (0 === --loadFlag) {
-        return _this.emit('loaded');
+    fs.readFile(path.join(this.options.dir, 'files.json'), function(err, data) {
+      var length, load, loadFlag, _i, _ref1, _results;
+      if (err) {
+        return _this.emit('error', err);
       }
-    };
-    this.on('index_load', load);
-    this.on('gps_load', load);
-    this.on('zone_load', load);
-    this.loadGps().loadZone();
-    for (length = _i = 1, _ref1 = this.indexLength; 1 <= _ref1 ? _i <= _ref1 : _i >= _ref1; length = 1 <= _ref1 ? ++_i : --_i) {
-      this.loadIndex(length);
-    }
+      _this.finfo = JSON.parse(data.toString());
+      _this.unpackInfo = unpackZoneInfo["" + _this.finfo.packer + "_" + _this.options.read_info];
+      _this.index = [];
+      _this.indexLength = _this.finfo.index.length - 1;
+      loadFlag = _this.indexLength + 2;
+      load = function() {
+        if (0 === --loadFlag) {
+          return _this.emit('loaded');
+        }
+      };
+      _this.on('index_load', load);
+      _this.on('gps_load', load);
+      _this.on('zone_load', load);
+      _this.loadGps().loadZone();
+      _results = [];
+      for (length = _i = 1, _ref1 = _this.indexLength; 1 <= _ref1 ? _i <= _ref1 : _i >= _ref1; length = 1 <= _ref1 ? ++_i : --_i) {
+        _results.push(_this.loadIndex(length));
+      }
+      return _results;
+    });
   }
 
   Finder.prototype.loadIndex = function(length) {
@@ -60,7 +68,7 @@ Finder = (function(_super) {
     fs.readFile(file, function(err, data) {
       var begin, end, hash, index, start, _i, _ref1, _ref2, _ref3;
       if (err) {
-        return _this.emit(err);
+        return _this.emit('error', err);
       }
       index = {};
       for (start = _i = 0, _ref1 = data.length, _ref2 = length + 8; _ref2 > 0 ? _i < _ref1 : _i > _ref1; start = _i += _ref2) {
@@ -80,7 +88,7 @@ Finder = (function(_super) {
     file = path.join(this.options.dir, this.finfo.gps);
     fs.readFile(file, function(err, data) {
       if (err) {
-        return _this.emit(err);
+        return _this.emit('error', err);
       }
       _this.gps = data;
       return _this.emit('gps_load');
@@ -96,14 +104,14 @@ Finder = (function(_super) {
       fs.open(file, 'r', function(err, zone) {
         _this.zone = zone;
         if (err) {
-          return _this.emit(err);
+          return _this.emit('error', err);
         }
         return _this.emit('zone_load');
       });
     } else {
       fs.readFile(file, function(err, data) {
         if (err) {
-          return _this.emit(err);
+          return _this.emit('error', err);
         }
         _this.zone = data;
         return _this.emit('zone_load');
@@ -238,7 +246,7 @@ Finder = (function(_super) {
 
   Finder.prototype.close = function() {
     var i, _i, _ref1;
-    if (this.options.read_info === 'fs') {
+    if (this.zone && this.options.read_info === 'fs') {
       fs.closeSync(this.zone);
     }
     this.zone = null;
