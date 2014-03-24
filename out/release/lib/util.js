@@ -167,7 +167,6 @@ exports.hashBox = function(lati, long, length) {
 exports.parseLineText = function(line) {
   var city, county, hash, id, lati, list, long, p, pnum, pos, province, town, txt, type, zone, _i, _len, _ref1, _ref2, _ref3, _ref4;
   _ref1 = line.split(/\t+/g), id = _ref1[0], txt = _ref1[1];
-  id *= 1;
   _ref2 = txt.split(';'), zone = _ref2[0], type = _ref2[1], pos = _ref2[2], pnum = _ref2[3];
   pos = pos.split(',');
   pnum *= 1;

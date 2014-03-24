@@ -178,7 +178,7 @@ exports.hashBox = (lati, long, length) ->
 
 exports.parseLineText = (line) ->
   [id, txt] = line.split /\t+/g
-  id *=1
+  # id *=1 # remove this to support char id
   [zone, type, pos, pnum] = txt.split(';')
   pos = pos.split ','
   pnum *=1
