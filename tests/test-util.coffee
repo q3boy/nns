@@ -71,8 +71,10 @@ describe 'Util', ->
     describe 'binary', ->
       it '& unpack with buffer', ->
         zone =
-          id       : 1, lati : 2
-          long     : 3, pnum : 4
+          lati     : 2
+          long     : 3
+          pnum     : 4
+          id       : new Buffer '1'
           type     : new Buffer 'type'
           town     : new Buffer 'town'
           county   : new Buffer 'county'
@@ -86,14 +88,17 @@ describe 'Util', ->
       it '& unpack with file handle', ->
         file = path.join __dirname, 'data/packzone.bin'
         zone =
-          id       : 1, lati : 2
-          long     : 3, pnum : 4
+          lati     : 2
+          long     : 3
+          pnum     : 4
+          id       : new Buffer '1'
           type     : new Buffer 'type'
           town     : new Buffer 'town'
           county   : new Buffer 'county'
           city     : new Buffer 'city'
           province : new Buffer 'province'
         buf = util.packZoneInfo.bin zone
+
         fs.unlinkSync file if fs.existsSync file
         fs.writeFileSync file, buf
 
@@ -102,13 +107,12 @@ describe 'Util', ->
         zone1 = util.unpackZoneInfo.bin_fs fd, 0, buf.length
         zone1.blen = buf.length
         e(zone1).to.eql zone
-
         fs.unlinkSync file if fs.existsSync file
 
     describe 'text', ->
       it '& unpack with buffer', ->
         zone =
-          id       : 1, lati : 2
+          id       : '1', lati : 2
           long     : 3, pnum : 4
           type     : 'type'
           town     : 'town'
@@ -123,7 +127,7 @@ describe 'Util', ->
       it '& unpack with file handle', ->
         file = path.join __dirname, 'data/packzone.json'
         zone =
-          id       : 1, lati : 2
+          id       : '1', lati : 2
           long     : 3, pnum : 4
           type     : 'type'
           town     : 'town'

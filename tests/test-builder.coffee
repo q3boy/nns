@@ -22,7 +22,7 @@ describe 'Builder', ->
       delete zone.offset
       delete zone.blen
       e(zone).to.eql
-        id       : 100056
+        id       : 'ab123456789012345678901234567890'
         lati     : 30.889946
         long     : 106.816818
         pnum     : 1068
@@ -48,7 +48,7 @@ describe 'Builder', ->
         flag = true
         e(b.data.length).to.be 10
         e(b.data[9]).to.eql
-          id       : 100056
+          id       : 'ab123456789012345678901234567890'
           hash     : 'wm7zwxmdur23'
           lati     : 30.889946
           long     : 106.816818
@@ -83,7 +83,7 @@ describe 'Builder', ->
         bin = fs.readFileSync path.join dir, @finfo.zone
         zone = util.unpackZoneInfo.bin_buffer bin, 0
         e(zone).to.eql
-          id       : 100056
+          id       : new Buffer 'ab123456789012345678901234567890'
           lati     : 30.889946
           long     : 106.816818
           pnum     : 1068
@@ -103,7 +103,7 @@ describe 'Builder', ->
         flag = true
         bin = fs.readFileSync path.join dir, @finfo.gps
         gps = util.unpackGpsInfo bin, 0
-        e(gps).to.eql [30.889946, 106.816818, 0, 63]
+        e(gps).to.eql [30.889946, 106.816818, 0, 95]
       b.on 'done', ->
         e(flag).to.be true
         done()

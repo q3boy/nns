@@ -129,8 +129,8 @@ describe 'Finder', ->
       it 'found char id', (done)->
         f = finder dir : dir, read_info : 'fs'
         f.on 'loaded', ->
-          zone = f.search 23.119328, 113.620748, 1
-          e(zone.id).to.be 'x10'
+          zone = f.search 30.889946, 106.816818, 1
+          e(zone.id).to.be 'ab123456789012345678901234567890'
           done()
       it 'not found', (done)->
         f = finder dir : dir, read_info : 'fs'
