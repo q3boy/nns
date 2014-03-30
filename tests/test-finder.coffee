@@ -126,6 +126,12 @@ describe 'Finder', ->
           zone1 = dirty 23.119328, 113.620748, 1
           e(zone[k]).to.be zone1[0][k] for k of zone
           done()
+      it 'found char id', (done)->
+        f = finder dir : dir, read_info : 'fs'
+        f.on 'loaded', ->
+          zone = f.search 30.889946, 106.816818, 1
+          e(zone.id).to.be 'ab123456789012345678901234567890'
+          done()
       it 'not found', (done)->
         f = finder dir : dir, read_info : 'fs'
         f.on 'loaded', ->
@@ -192,6 +198,7 @@ describe 'Finder', ->
           list = f.topn 1, 2, 1, 1
           e(list.length).to.be 0
           done()
+      
       it 'not found', (done) ->
         f = finder dir : dir, read_info : 'fs', min_index : 1
         f.on 'loaded', ->

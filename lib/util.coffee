@@ -17,27 +17,19 @@ exports.packZoneInfo = {}
 #  typelen|townlen|cotylen|citylen|provlen    |---type+town+county+city+province
 exports.packZoneInfo.bin = (zone) ->
 
-  txt = zone.type + zone.town + zone.county + zone.city + zone.province
+  txt = zone.id + zone.type + zone.town + zone.county + zone.city + zone.province
   zone.blen = 21 + Buffer.byteLength txt
   buf = new Buffer zone.blen
-  buf.writeUInt32BE zone.id                          , 0
-  buf.writeUInt32BE (0.5 + zone.lati * 1000000) | 0  , 4
-  buf.writeUInt32BE (0.5 + zone.long * 1000000) | 0  , 8
-  buf.writeUInt32BE zone.pnum                        , 12
-  pos1 = 16
+  buf.writeUInt32BE (0.5 + zone.lati * 1000000) | 0  , 0
+  buf.writeUInt32BE (0.5 + zone.long * 1000000) | 0  , 4
+  buf.writeUInt32BE zone.pnum                        , 8
+  pos1 = 12
   pos2 = 21
-  for field in ['type', 'town', 'county', 'city', 'province']
+  for field in ['id', 'type', 'town', 'county', 'city', 'province']
     txt = new Buffer txt unless (txt = zone[field]) instanceof Buffer
     buf.writeUInt8 txt.length, pos1++
     txt.copy buf, pos2
-    # buf.write txt, pos2
     pos2 += txt.length
-  # buf.writeUInt8    Buffer.byteLength(zone.type)     , 16
-  # buf.writeUInt8    Buffer.byteLength(zone.town)     , 17
-  # buf.writeUInt8    Buffer.byteLength(zone.county)   , 18
-  # buf.writeUInt8    Buffer.byteLength(zone.city)     , 19
-  # buf.writeUInt8    Buffer.byteLength(zone.province) , 20
-  # buf.write         txt                              , 21
   buf
 
 exports.packZoneInfo.json = (zone) ->
@@ -51,15 +43,15 @@ exports.unpackZoneInfo = {}
 exports.unpackZoneInfo.bin_buffer = (buf, start) ->
   offset = 21
   {
-    id       : buf.readUInt32BE start+0, true
-    lati     : buf.readUInt32BE(start+4, true) / 1000000
-    long     : buf.readUInt32BE(start+8, true) / 1000000
-    pnum     : buf.readUInt32BE start+12, true
-    type     : buf.slice offset, offset += buf.readUInt8 start+16, true
-    town     : buf.slice offset, offset += buf.readUInt8 start+17, true
-    county   : buf.slice offset, offset += buf.readUInt8 start+18, true
-    city     : buf.slice offset, offset += buf.readUInt8 start+19, true
-    province : buf.slice offset, offset += buf.readUInt8 start+20, true
+    lati     : buf.readUInt32BE(start+0, true) / 1000000
+    long     : buf.readUInt32BE(start+4, true) / 1000000
+    pnum     : buf.readUInt32BE start+8, true
+    id       : buf.slice offset, offset += buf.readUInt8 start + 12, true
+    type     : buf.slice offset, offset += buf.readUInt8 start + 13, true
+    town     : buf.slice offset, offset += buf.readUInt8 start + 14, true
+    county   : buf.slice offset, offset += buf.readUInt8 start + 15, true
+    city     : buf.slice offset, offset += buf.readUInt8 start + 16, true
+    province : buf.slice offset, offset += buf.readUInt8 start + 17, true
   }
 
 zoneInfoBuffer = new Buffer 65536
@@ -69,17 +61,16 @@ exports.unpackZoneInfo.bin_fs = (fd, offset, length) ->
   fs.readSync fd, zoneInfoBuffer, 0, length, offset
   offset = 21
   {
-    id       : zoneInfoBuffer.readUInt32BE 0, true
-    lati     : zoneInfoBuffer.readUInt32BE(4, true) / 1000000
-    long     : zoneInfoBuffer.readUInt32BE(8, true) / 1000000
-    pnum     : zoneInfoBuffer.readUInt32BE 12, true
-    type     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 16, true
-    town     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 17, true
-    county   : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 18, true
-    city     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 19, true
-    province : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 20, true
+    lati     : zoneInfoBuffer.readUInt32BE(0, true) / 1000000
+    long     : zoneInfoBuffer.readUInt32BE(4, true) / 1000000
+    pnum     : zoneInfoBuffer.readUInt32BE 8, true
+    id       : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 12, true
+    type     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 13, true
+    town     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 14, true
+    county   : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 15, true
+    city     : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 16, true
+    province : zoneInfoBuffer.slice offset, offset += zoneInfoBuffer.readUInt8 17, true
   }
-
 
 
 exports.unpackZoneInfo.json_buffer = (buf, offset, length) ->
@@ -107,8 +98,10 @@ exports.packGpsInfo = (zone) ->
 
 exports.unpackGpsInfo = (buf, start) ->
   [
-    buf.readUInt32BE(start, true) / 1000000, buf.readUInt32BE(start+4, true) / 1000000
-    buf.readUInt32BE(start+8, true), buf.readUInt16BE(start+12, true)
+    buf.readUInt32BE(start, true) / 1000000
+    buf.readUInt32BE(start+4, true) / 1000000
+    buf.readUInt32BE(start+8, true)
+    buf.readUInt16BE(start+12, true)
   ]
 
 exports.packIndex = (hash, begin, end) ->
@@ -178,7 +171,7 @@ exports.hashBox = (lati, long, length) ->
 
 exports.parseLineText = (line) ->
   [id, txt] = line.split /\t+/g
-  id *=1
+  # id *=1 # remove this to support char id
   [zone, type, pos, pnum] = txt.split(';')
   pos = pos.split ','
   pnum *=1

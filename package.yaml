@@ -1,6 +1,6 @@
 name: nns
 main: index.js
-version: 0.0.1
+version: 0.0.2
 description: 'A nearest neighbor search engine.'
 author:
   name  : q3boy
